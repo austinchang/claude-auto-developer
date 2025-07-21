@@ -186,6 +186,16 @@ class TaskFileParser:
         status_char = match.group(1).strip()
         task_content = match.group(2).strip()
         
+        # 🔍 新增：檢查是否為範例任務
+        if task_content.startswith('[EXAMPLE]'):
+            logger.debug(f"跳過範例任務 (行 {line_num}): {task_content[:50]}...")
+            return None
+        
+        # 🔍 新增：檢查是否在範例區域
+        if '範例' in section or 'Examples' in section or 'example' in section.lower():
+            logger.debug(f"跳過範例區域任務 (行 {line_num}): {task_content[:50]}...")
+            return None
+        
         # 解析狀態
         status_key = f'[{status_char.lower()}]'
         status = self.status_markers.get(status_key, TaskStatus.PENDING)

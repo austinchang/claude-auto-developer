@@ -31,6 +31,61 @@ class GitHubConfig:
     branch: str = "main"               # 分支名稱
     sync_interval: int = 300           # 同步間隔（秒）
     local_file_path: str = "/home/tengjung_chang/TASKS.md"
+    
+    @classmethod
+    def from_env(cls, local_file_path: Optional[str] = None) -> 'GitHubConfig':
+        """從環境變數創建 GitHub 配置
+        
+        Args:
+            local_file_path: 本地文件路徑，如果不提供則使用默認值
+            
+        Returns:
+            GitHubConfig: GitHub 配置實例
+            
+        Raises:
+            ValueError: 如果必要的環境變數未設置
+        """
+        # 讀取 GitHub Token
+        token = os.getenv('GITHUB_TOKEN')
+        if not token:
+            # 嘗試從 .git-credentials 讀取
+            try:
+                credentials_path = Path.home() / '.git-credentials'
+                if credentials_path.exists():
+                    with open(credentials_path, 'r') as f:
+                        for line in f:
+                            if 'github.com' in line:
+                                # 格式: https://username:token@github.com
+                                if ':' in line and '@github.com' in line:
+                                    token = line.split(':')[2].split('@')[0].strip()
+                                    break
+            except Exception as e:
+                logger.warning(f"無法從 .git-credentials 讀取 token: {e}")
+        
+        if not token:
+            raise ValueError("GitHub token 未設置，請設置 GITHUB_TOKEN 環境變數或配置 .git-credentials")
+        
+        # 倉庫配置
+        repo_owner = os.getenv('GITHUB_REPO_OWNER', 'austinchang')
+        repo_name = os.getenv('GITHUB_REPO_NAME', 'claude-auto-developer-tasks')
+        
+        # 其他配置
+        file_path = os.getenv('GITHUB_FILE_PATH', 'TASKS.md')
+        branch = os.getenv('GITHUB_BRANCH', 'main')
+        sync_interval = int(os.getenv('GITHUB_SYNC_INTERVAL', '300'))
+        
+        if local_file_path is None:
+            local_file_path = os.getenv('LOCAL_TASKS_FILE', '/home/tengjung_chang/TASKS.md')
+        
+        return cls(
+            token=token,
+            repo_owner=repo_owner,
+            repo_name=repo_name,
+            file_path=file_path,
+            branch=branch,
+            sync_interval=sync_interval,
+            local_file_path=local_file_path
+        )
 
 @dataclass
 class SyncResult:
