@@ -112,11 +112,22 @@ dmypy.json
 .pyre/
 
 # Claude Auto Developer specific
+claude_env/                    # Duplicate virtual environment
 logs/*.db
 logs/*.log
-output/*/
+output/task_*/                 # Generated test projects
 temp/
 .claude_config
 *.pid
 .DS_Store
 Thumbs.db
+
+# Backup files
+.task_backups/
+.github_sync_backups/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo

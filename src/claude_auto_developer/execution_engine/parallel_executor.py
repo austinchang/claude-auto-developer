@@ -374,7 +374,7 @@ class ParallelExecutor:
         workspace = context.workspace_path
         
         # 創建專案結構
-        directories = ['src', 'tests', 'docs', 'config']
+        directories = ['src', 'tests', 'docs', 'config', 'scripts']
         for dir_name in directories:
             os.makedirs(os.path.join(workspace, dir_name), exist_ok=True)
         
@@ -384,14 +384,374 @@ class ParallelExecutor:
             "description": task['description'],
             "tech_stack": analysis.get('tech_stack', []),
             "complexity": analysis.get('complexity', 'medium'),
-            "created_at": datetime.now().isoformat()
+            "created_at": datetime.now().isoformat(),
+            "python_version": "3.8+",
+            "has_venv": True,
+            "auto_deploy": True
         }
         
         config_path = os.path.join(workspace, 'config', 'project.json')
         with open(config_path, 'w', encoding='utf-8') as f:
             json.dump(project_config, f, ensure_ascii=False, indent=2)
         
+        # 生成 requirements.txt
+        self._generate_requirements_txt(task, workspace, analysis)
+        
+        # 創建虛擬環境設置腳本
+        self._generate_venv_setup_script(task, workspace, analysis)
+        
+        # 創建自動部署腳本
+        self._generate_deployment_script(task, workspace, analysis)
+        
         context.logs.append(f"工作區設置完成: {workspace}")
+        context.logs.append("✅ 自動環境建置腳本已生成")
+    
+    def _generate_requirements_txt(self, task: Dict[str, Any], workspace: str, analysis: Dict[str, Any]):
+        """生成 requirements.txt 檔案"""
+        tech_stack = analysis.get('tech_stack', [])
+        
+        # 基礎依賴
+        requirements = [
+            "# 基礎依賴",
+            "python-dotenv>=0.19.0",
+            "pydantic>=1.8.0",
+            "click>=8.0.0",
+            ""
+        ]
+        
+        # 根據技術棧添加依賴
+        if 'frontend' in tech_stack:
+            requirements.extend([
+                "# 前端相關",
+                "jinja2>=3.0.0",
+                "flask>=2.0.0",
+                "flask-cors>=3.0.0",
+                ""
+            ])
+        
+        if 'backend' in tech_stack:
+            requirements.extend([
+                "# 後端相關", 
+                "fastapi>=0.68.0",
+                "uvicorn>=0.15.0",
+                "requests>=2.25.0",
+                "httpx>=0.24.0",
+                ""
+            ])
+        
+        if 'database' in tech_stack:
+            requirements.extend([
+                "# 資料庫相關",
+                "sqlalchemy>=1.4.0",
+                "sqlite3-python>=0.4.0",
+                "alembic>=1.7.0",
+                ""
+            ])
+        
+        if 'ai_ml' in tech_stack:
+            requirements.extend([
+                "# AI/ML 相關",
+                "pandas>=1.3.0",
+                "numpy>=1.21.0",
+                "scikit-learn>=1.0.0",
+                "matplotlib>=3.4.0",
+                "seaborn>=0.11.0",
+                ""
+            ])
+        
+        if 'web' in tech_stack or 'frontend' in tech_stack:
+            requirements.extend([
+                "# Web 開發",
+                "beautifulsoup4>=4.9.0",
+                "selenium>=4.0.0",
+                "playwright>=1.20.0",
+                ""
+            ])
+        
+        # 開發工具
+        requirements.extend([
+            "# 開發工具",
+            "pytest>=6.2.0",
+            "pytest-cov>=2.12.0",
+            "black>=21.0.0",
+            "flake8>=3.9.0",
+            "pre-commit>=2.15.0"
+        ])
+        
+        requirements_path = os.path.join(workspace, 'requirements.txt')
+        with open(requirements_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(requirements))
+    
+    def _generate_venv_setup_script(self, task: Dict[str, Any], workspace: str, analysis: Dict[str, Any]):
+        """生成虛擬環境設置腳本"""
+        
+        # Windows 腳本
+        setup_bat = f'''@echo off
+echo 🚀 {task['description']} - 環境設置
+echo ================================================
+
+echo 📦 檢查 Python 版本...
+python --version
+if errorlevel 1 (
+    echo ❌ Python 未安裝，請先安裝 Python 3.8+
+    pause
+    exit /b 1
+)
+
+echo 🔧 創建虛擬環境...
+if not exist "venv" (
+    python -m venv venv
+    echo ✅ 虛擬環境創建完成
+) else (
+    echo ✅ 虛擬環境已存在
+)
+
+echo 🔌 啟動虛擬環境...
+call venv\\Scripts\\activate.bat
+
+echo 📥 安裝依賴套件...
+pip install --upgrade pip
+pip install -r requirements.txt
+
+echo 🧪 驗證安裝...
+python -c "import sys; print(f'Python {{sys.version}}')"
+python -c "print('✅ 環境設置完成！')"
+
+echo 🎉 設置完成！現在可以開始開發了
+echo 💡 使用方式:
+echo    1. 啟動環境: venv\\Scripts\\activate.bat
+echo    2. 執行主程式: python src\\main.py
+echo    3. 執行測試: pytest tests\\
+echo    4. 退出環境: deactivate
+pause'''
+        
+        # Linux/Mac 腳本
+        setup_sh = f'''#!/bin/bash
+echo "🚀 {task['description']} - 環境設置"
+echo "================================================"
+
+echo "📦 檢查 Python 版本..."
+if ! command -v python3 &> /dev/null; then
+    echo "❌ Python3 未安裝，請先安裝 Python 3.8+"
+    exit 1
+fi
+python3 --version
+
+echo "🔧 創建虛擬環境..."
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+    echo "✅ 虛擬環境創建完成"
+else
+    echo "✅ 虛擬環境已存在"
+fi
+
+echo "🔌 啟動虛擬環境..."
+source venv/bin/activate
+
+echo "📥 安裝依賴套件..."
+pip install --upgrade pip
+pip install -r requirements.txt
+
+echo "🧪 驗證安裝..."
+python -c "import sys; print(f'Python {{sys.version}}')"
+python -c "print('✅ 環境設置完成！')"
+
+echo "🎉 設置完成！現在可以開始開發了"
+echo "💡 使用方式:"
+echo "   1. 啟動環境: source venv/bin/activate"
+echo "   2. 執行主程式: python src/main.py"
+echo "   3. 執行測試: pytest tests/"
+echo "   4. 退出環境: deactivate"'''
+        
+        # 保存腳本
+        bat_path = os.path.join(workspace, 'setup.bat')
+        with open(bat_path, 'w', encoding='utf-8') as f:
+            f.write(setup_bat)
+        
+        sh_path = os.path.join(workspace, 'setup.sh')
+        with open(sh_path, 'w', encoding='utf-8') as f:
+            f.write(setup_sh)
+        
+        # 設置執行權限
+        try:
+            os.chmod(sh_path, 0o755)
+        except:
+            pass
+    
+    def _generate_deployment_script(self, task: Dict[str, Any], workspace: str, analysis: Dict[str, Any]):
+        """生成部署腳本"""
+        
+        # Docker 部署
+        dockerfile = f'''# {task['description']} - Docker 部署
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# 複製依賴檔案
+COPY requirements.txt .
+
+# 安裝依賴
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 複製應用程式
+COPY src/ ./src/
+COPY config/ ./config/
+
+# 設置環境變數
+ENV PYTHONPATH=/app
+ENV FLASK_APP=src/main.py
+
+# 暴露端口
+EXPOSE 8000
+
+# 啟動命令
+CMD ["python", "src/main.py"]'''
+        
+        # Docker Compose
+        docker_compose = f'''version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+  
+  # 如果需要資料庫
+  # db:
+  #   image: postgres:13
+  #   environment:
+  #     POSTGRES_DB: appdb
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+
+# volumes:
+#   postgres_data:'''
+        
+        # GitHub Actions 部署
+        github_workflow = f'''name: 自動部署 - {task['description']}
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: 設置 Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+    
+    - name: 安裝依賴
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: 執行測試
+      run: |
+        pytest tests/ -v --cov=src
+    
+    - name: 代碼品質檢查
+      run: |
+        flake8 src/ tests/
+        black --check src/ tests/
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: 部署到伺服器
+      run: |
+        echo "🚀 部署到生產環境..."
+        # 在這裡加入實際的部署步驟'''
+        
+        # 保存部署檔案
+        dockerfile_path = os.path.join(workspace, 'Dockerfile')
+        with open(dockerfile_path, 'w', encoding='utf-8') as f:
+            f.write(dockerfile)
+        
+        compose_path = os.path.join(workspace, 'docker-compose.yml')
+        with open(compose_path, 'w', encoding='utf-8') as f:
+            f.write(docker_compose)
+        
+        # 創建 .github/workflows 目錄
+        workflows_dir = os.path.join(workspace, '.github', 'workflows')
+        os.makedirs(workflows_dir, exist_ok=True)
+        
+        workflow_path = os.path.join(workflows_dir, 'deploy.yml')
+        with open(workflow_path, 'w', encoding='utf-8') as f:
+            f.write(github_workflow)
+        
+        # 創建 .gitignore
+        gitignore_content = f'''# {task['description']} - Git 忽略規則
+
+# 虛擬環境
+venv/
+env/
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 日誌
+*.log
+logs/
+
+# 資料庫
+*.db
+*.sqlite3
+
+# 臨時檔案
+.tmp/
+temp/
+.cache/
+
+# 作業系統
+.DS_Store
+Thumbs.db
+
+# 測試覆蓋率
+.coverage
+htmlcov/
+.pytest_cache/
+
+# 環境變數
+.env.local
+.env.production'''
+        
+        gitignore_path = os.path.join(workspace, '.gitignore')
+        with open(gitignore_path, 'w', encoding='utf-8') as f:
+            f.write(gitignore_content)
     
     def _generate_code(self, task: Dict[str, Any], context: ExecutionContext, analysis: Dict[str, Any]) -> Dict[str, Any]:
         """生成程式碼"""

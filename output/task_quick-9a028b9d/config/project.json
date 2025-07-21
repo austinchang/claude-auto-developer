@@ -1,0 +1,13 @@
+{
+  "name": "task_quick-9a028b9d",
+  "description": "創建電商網站",
+  "tech_stack": [
+    "frontend",
+    "backend"
+  ],
+  "complexity": "medium",
+  "created_at": "2025-07-21T10:39:53.185212",
+  "python_version": "3.8+",
+  "has_venv": true,
+  "auto_deploy": true
+}

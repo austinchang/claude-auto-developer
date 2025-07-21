@@ -1,0 +1,1 @@
+"""Test fixtures and helper data for Claude Auto Developer tests"""

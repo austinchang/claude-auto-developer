@@ -269,6 +269,100 @@ def threads():
     
     console.print(table)
 
+@cli.command()
+@click.argument('description')
+@click.option('--priority', '-p', default='high', 
+              type=click.Choice(['urgent', 'high', 'medium', 'low']),
+              help='優先級')
+@click.option('--mode', '-m', default='auto',
+              type=click.Choice(['auto', 'project', 'single', 'emergency']),
+              help='執行模式')
+def quick(description, priority, mode):
+    """
+    快速開發模式 - 跳過計畫清單直接執行開發任務
+    
+    範例:
+    claude-auto quick "創建電商網站" --priority high --mode project
+    """
+    console.print(f"[bold green]🚀 Claude Auto Developer - 快速開發模式[/bold green]")
+    console.print(f"📝 任務: {description}")
+    console.print(f"🎯 優先級: {priority}")
+    console.print(f"⚙️ 模式: {mode}")
+    console.print("-" * 50)
+    
+    try:
+        # 1. 分析任務
+        console.print("[blue]📊 分析任務需求...[/blue]")
+        analyzer = TaskAnalyzer()
+        with console.status("[bold blue]分析中..."):
+            analysis = analyzer.analyze_requirement(description)
+        
+        console.print(f"   複雜度: {analysis['complexity']}")
+        console.print(f"   技術棧: {', '.join(analysis['tech_stack'])}")
+        console.print(f"   預估時間: {analysis['estimated_time']['min_time']}-{analysis['estimated_time']['max_time']} {analysis['estimated_time']['unit']}")
+        
+        # 2. 創建任務
+        import uuid
+        from datetime import datetime
+        
+        task = {
+            'id': f"quick-{str(uuid.uuid4())[:8]}",
+            'description': description,
+            'priority': priority,
+            'type': 'project',
+            'status': 'pending',
+            'deadline': '1天',
+            'created_at': datetime.now().isoformat(),
+            'analysis': analysis
+        }
+        
+        console.print(f"[cyan]📋 任務 ID: {task['id']}[/cyan]")
+        
+        # 3. 啟動執行器
+        console.print("\n[blue]🔧 初始化執行引擎...[/blue]")
+        executor = ParallelExecutor(max_threads=2, workspace_base="./output")
+        
+        # 4. 直接執行任務
+        console.print("[blue]🚀 開始執行任務...[/blue]")
+        
+        # 創建執行上下文
+        from claude_auto_developer.execution_engine.parallel_executor import ExecutionContext
+        import os
+        
+        workspace_path = os.path.join("./output", f"task_{task['id']}")
+        os.makedirs(workspace_path, exist_ok=True)
+        
+        context = ExecutionContext(
+            task_id=task['id'],
+            thread_id="main_thread",
+            start_time=datetime.now(),
+            workspace_path=workspace_path
+        )
+        
+        # 執行任務
+        with console.status("[bold green]執行中..."):
+            result = executor._execute_task(task, context)
+        
+        console.print("\n[bold green]✅ 任務執行完成！[/bold green]")
+        console.print(f"📁 工作區位置: {workspace_path}")
+        console.print(f"⏱️ 執行時間: {result.get('execution_time', 0):.1f} 秒")
+        console.print(f"📊 狀態: {result.get('status', 'unknown')}")
+        
+        if result.get('status') == 'completed':
+            console.print(f"📄 生成檔案: {result.get('code_result', {}).get('file_count', 0)} 個")
+            console.print(f"🧪 測試結果: {result.get('test_result', {}).get('test_results', 'N/A')}")
+        
+        console.print(f"\n[dim]📂 查看結果: ls -la {workspace_path}[/dim]")
+        console.print(f"[dim]📖 閱讀 README: cat {workspace_path}/README.md[/dim]")
+        
+        return result
+        
+    except Exception as e:
+        console.print(f"[red]❌ 執行失敗: {str(e)}[/red]")
+        import traceback
+        traceback.print_exc()
+        return None
+
 def display_task_info(task):
     """顯示任務資訊"""
     info_text = f"""
