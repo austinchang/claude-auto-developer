@@ -19,6 +19,7 @@ from .task_manager.task_analyzer import TaskAnalyzer
 from .task_manager.task_planner import TaskPlanner
 from .task_manager.priority_manager import PriorityManager
 from .task_manager.deadline_tracker import DeadlineTracker
+from .execution_engine.parallel_executor import ParallelExecutor, ExecutionMode
 
 console = Console()
 
@@ -118,7 +119,7 @@ def list(filter, limit):
 
 @cli.command()
 @click.option('--mode', '-m', default="auto",
-              type=click.Choice(['auto', 'project', 'single']),
+              type=click.Choice(['auto', 'project', 'single', 'emergency']),
               help='執行模式')
 @click.option('--max-threads', default=4, help='最大執行緒數')
 def start(mode, max_threads):
@@ -138,27 +139,53 @@ def start(mode, max_threads):
     console.print(f"[blue]執行模式: {mode}[/blue]")
     console.print(f"[blue]最大執行緒數: {max_threads}[/blue]")
     
-    # 模擬啟動過程
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
+    # 創建並啟動執行引擎
+    try:
+        executor = ParallelExecutor(max_threads=max_threads)
         
-        task1 = progress.add_task("初始化執行引擎...", total=None)
-        progress.advance(task1)
+        # 模擬啟動過程
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            
+            task1 = progress.add_task("初始化執行引擎...", total=None)
+            progress.advance(task1)
+            
+            task2 = progress.add_task("分析任務依賴關係...", total=None)
+            progress.advance(task2)
+            
+            task3 = progress.add_task("分配執行緒資源...", total=None)
+            progress.advance(task3)
+            
+            task4 = progress.add_task("啟動並行執行...", total=None)
+            progress.advance(task4)
         
-        task2 = progress.add_task("分析任務依賴關係...", total=None)
-        progress.advance(task2)
+        # 啟動執行
+        execution_mode = getattr(ExecutionMode, mode.upper())
+        success = executor.start_execution(execution_mode)
         
-        task3 = progress.add_task("分配執行緒資源...", total=None)
-        progress.advance(task3)
-        
-        task4 = progress.add_task("啟動並行執行...", total=None)
-        progress.advance(task4)
-    
-    console.print("[bold green]✅ 自動開發系統已啟動！[/bold green]")
-    console.print("[blue]系統將在背景持續執行，您可以使用 'claude-auto status' 查看進度[/blue]")
+        if success:
+            console.print("[bold green]✅ 自動開發系統已啟動！[/bold green]")
+            console.print("[blue]系統將在背景持續執行，您可以使用 'claude-auto status' 查看進度[/blue]")
+            
+            # 保存執行器引用 (簡化版，實際應該用更好的方式管理)
+            import os
+            executor_info = {
+                "pid": os.getpid(),
+                "start_time": executor.execution_stats["start_time"].isoformat() if executor.execution_stats["start_time"] else None,
+                "mode": mode,
+                "max_threads": max_threads
+            }
+            
+            # 在實際環境中，這裡應該將執行器資訊保存到檔案或資料庫
+            console.print(f"[dim]執行器 PID: {executor_info['pid']}[/dim]")
+        else:
+            console.print("[red]❌ 啟動失敗[/red]")
+            
+    except Exception as e:
+        console.print(f"[red]啟動錯誤: {str(e)}[/red]")
 
 @cli.command()
 @click.option('--detailed', '-d', is_flag=True, help='顯示詳細資訊')
