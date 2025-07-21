@@ -1,464 +1,481 @@
-# 🤖 Claude Auto Developer - 智能專案開發自動化系統
+# 🤖 Claude Auto Developer - 智能自主開發系統
 
-**讓 Claude Code 在晚上也能工作的革命性開發工具**
+**真正的 24/7 自動化開發工具 - 讓 AI 在你睡覺時也能開發程式！**
+
+[![GitHub](https://img.shields.io/badge/GitHub-claude--auto--developer-blue?logo=github)](https://github.com/austinchang/claude-auto-developer)
+[![Tasks](https://img.shields.io/badge/GitHub-任務管理-green?logo=github)](https://github.com/austinchang/claude-auto-developer-tasks)
+[![Status](https://img.shields.io/badge/Status-生產就緒-success)]()
+
+---
 
 ## 🎯 系統概述
 
-Claude Auto Developer 是一個能透過單一指令管理開發任務，並自動執行多執行緒並行開發的智能系統。使用者只需要用簡單的指令描述需求，系統就會自動完成從需求分析到程式碼實作的完整開發流程。
+Claude Auto Developer 是一個革命性的 AI 自動化開發系統，能夠：
+
+- 📝 **智能任務解析** - 自動理解你的開發需求
+- 🔄 **自動同步檢測** - 監控 GitHub 和本地任務變化  
+- 🌙 **24/7 夜間開發** - 真正的背景服務，睡覺時也在工作
+- 🧠 **多 AI 模型整合** - Claude + GPT-4 + Gemini 協同開發
+- ⚡ **智能資源管理** - 根據用戶活動調整資源使用
+- 🚀 **全自動化流程** - 從需求分析到程式碼部署
+
+---
 
 ## ✨ 核心特色
 
-- **🎯 單指令操作** - 一行命令即可新增開發任務
-- **🧠 智能計畫清單** - 自動記錄和管理所有開發需求
-- **⚡ 多執行緒並行** - 同時開發多個功能或專案
-- **⏰ 時間約束開發** - 在指定時間內完成開發任務
-- **🤖 全自動化流程** - 從需求分析到部署上線
-- **🌙 夜間自主開發** - 24/7 背景開發，睡覺時也在工作
-- **🌐 GitHub 遠端協作** - 任何地方編輯 TASKS.md，自動同步執行
-- **🔧 智能資源管理** - 動態調整資源使用，不干擾正常工作
+### 🔥 **真正的自主開發**
+- **智能任務解析**: 自動分析需求，選擇最佳技術棧
+- **24/7 背景執行**: 不占用終端機，真正的背景服務
+- **用戶活動檢測**: 白天隱藏模式，夜間全力開發
+- **自動狀態同步**: 完成狀態自動更新到 GitHub
+
+### 🌐 **GitHub 遠端協作**
+- **雙向同步**: 本地 ↔ GitHub 自動同步
+- **任何地方編輯**: 在 GitHub 上編輯任務，5分鐘內自動執行
+- **自動提交**: 完成的專案自動 Git commit 和推送
+- **進度追蹤**: 即時更新任務執行狀態
+
+### 🧠 **多 AI 整合**
+- **Claude 3.5 Sonnet**: 主要開發和程式碼生成
+- **GPT-4**: 複雜邏輯分析和架構設計
+- **Gemini Pro**: 品質檢查和程式碼優化
+- **智能模型選擇**: 根據任務類型自動選擇最佳 AI
+
+---
 
 ## 🚀 快速開始
 
-### 安裝
-```bash
-# 克隆專案
-git clone https://github.com/austinchang/claude-auto-developer.git
-cd claude-auto-developer
+### 📦 環境準備
 
-# 安裝依賴
+**1. 進入專案目錄**
+```bash
+cd /home/tengjung_chang/austin-dev-config/claude-auto-dev
+```
+
+**2. 啟動虛擬環境**
+```bash
+source venv/bin/activate
+```
+
+**3. 安裝依賴 (如需要)**
+```bash
 pip install -r requirements.txt
-
-# 安裝全局指令
-python setup.py install
 ```
 
-### 基本使用
+### ⚡ 一鍵啟動 (推薦)
+
+**快捷命令設置** (已自動配置):
 ```bash
-# 新增開發任務
-claude-auto add "為 power_meter_gui 增加 AI 預測功能" --deadline "2天" --priority "high"
-
-# 快速開發模式（跳過計畫清單）
-claude-auto quick "創建電商網站" --priority high --mode project
-
-# 查看計畫清單
-claude-auto list
-
-# 啟動自動開發
-claude-auto start
-
-# 檢查進度
-claude-auto status
+claude-status      # 查看服務狀態
+claude-start       # 啟動背景服務
+claude-stop        # 停止服務
+claude-logs        # 查看即時日誌
+claude-edit        # 編輯任務文件
+claude-dir         # 進入專案目錄
 ```
 
-### 🌐 GitHub 遠端任務管理
-
-**設定 GitHub 同步（推薦方式）:**
-
-1. **創建 GitHub 倉庫用於任務管理:**
+**立即啟動**:
 ```bash
-# 在 GitHub 上創建一個新倉庫，例如: your-tasks
-# 然後設定環境變數
-export GITHUB_TOKEN="your_github_token"
-export GITHUB_REPO_OWNER="your_username"
-export GITHUB_REPO_NAME="your-tasks"
-export GITHUB_TASKS_FILE="TASKS.md"
+claude-start       # 啟動背景服務
+claude-status      # 確認運行狀態
 ```
 
-2. **編輯遠端任務文件:**
-   - 在 GitHub 倉庫中創建或編輯 `TASKS.md` 文件
-   - 使用標準的任務格式（見下方示例）
-   - 系統會每 5 分鐘自動同步並執行新任務
+### 📝 三種任務編輯方式
 
-3. **任務文件格式示例:**
+**方式1: GitHub 遠端編輯 (推薦)**
+```bash
+# 訪問 GitHub 任務管理頁面
+https://github.com/austinchang/claude-auto-developer-tasks/blob/main/TASKS.md
+```
+
+**方式2: 本地快速編輯**
+```bash
+claude-edit        # 使用預設編輯器
+# 或直接編輯
+nano /home/tengjung_chang/TASKS.md
+```
+
+**方式3: 專案目錄操作**
+```bash
+cd /home/tengjung_chang/austin-dev-config/claude-auto-dev
+python claude_service.py start
+python claude_service.py status
+```
+
+---
+
+## 📋 任務格式標準
+
+### 基本格式
 ```markdown
-# 🤖 開發任務清單
+- [ ] **任務標題** | 截止日期: XXX | 技術: XXX | 描述: XXX | 時間: XXX
+```
 
+### 優先級分類
+```markdown
 ## 🔥 緊急項目 (24小時內)
-- [ ] **修復支付 Bug** | 截止日期: 明天 | 技術: Python + FastAPI | 描述: 修復第三方支付介面問題
+- [ ] **修復支付 Bug** | 截止日期: 今天下午 | 技術: Python + FastAPI | 描述: 修復第三方支付介面連接失敗問題 | 時間: 3小時
 
 ## ⭐ 高優先級 (本週內)  
-- [ ] **AI 聊天功能** | 截止日期: 週五 | 技術: OpenAI + React | 描述: 整合 GPT-4 聊天機器人
+- [ ] **個人作品集網站** | 截止日期: 週五 | 技術: React + TypeScript + Tailwind | 描述: 創建響應式個人網站，包含專案展示、技能介紹、聯絡表單 | 時間: 2天
+
+## 📅 一般項目 (兩週內)
+- [ ] **資料分析儀表板** | 截止日期: 下週三 | 技術: Python + Streamlit + Plotly | 描述: 創建互動式數據可視化工具，支援 CSV 上傳和圖表生成 | 時間: 3天
+
+## 🔖 低優先級 (一個月內)
+- [ ] **移動端原型** | 截止日期: 月底 | 技術: React Native + Expo | 描述: 開發跨平台移動應用 MVP 版本 | 時間: 1週
 ```
 
-4. **本地 TASKS.md 位置:**
-   - 本地文件位置: `/home/tengjung_chang/TASKS.md`
-   - 可以直接編輯本地文件，也會自動同步到 GitHub
+---
 
-### 🌙 夜間自主開發
+## 🛠️ 服務管理
 
-**24/7 背景開發設定:**
-
+### 📊 狀態監控
 ```bash
-# 啟動夜間開發引擎
-python -m claude_auto_developer.autonomous_engine.night_developer
+# 查看服務狀態
+claude-status
 
-# 或在 Python 中使用
-from claude_auto_developer.autonomous_engine.night_developer import NightDeveloper, NightConfig
-from datetime import time
+# 查看即時日誌 (最後50行)
+claude-logs
 
-config = NightConfig(
-    night_start_time=time(22, 0),    # 晚上 10 點開始工作
-    night_end_time=time(6, 0),       # 早上 6 點結束
-    max_cpu_usage=0.8,               # 最大 CPU 使用率 80%
-    github_sync_enabled=True         # 啟用 GitHub 同步
-)
-
-night_dev = NightDeveloper(config)
-await night_dev.start()
+# 查看詳細日誌文件
+tail -f logs/claude_auto_dev_$(date +%Y%m%d).log
 ```
 
-**夜間開發特色:**
-- **用戶活動檢測**: 自動檢測用戶是否在使用電腦
-- **智能資源調配**: 在夜間最大化資源使用，白天隱藏模式
-- **自動任務過濾**: 只執行適合自動化的任務
-- **進度自動更新**: 完成後自動更新 TASKS.md 狀態
-- **GitHub 自動同步**: 定期同步遠端任務列表
+### 🔄 服務控制
+```bash
+# 啟動背景服務
+claude-start
+
+# 停止服務
+claude-stop
+
+# 重新啟動
+python claude_service.py restart
+
+# 查看幫助
+python claude_service.py help
+```
+
+### 🔧 進階操作
+```bash
+# 進入專案目錄
+claude-dir
+
+# 手動啟動 (前台模式)
+python start_claude_dev.py
+
+# 直接背景啟動
+python run_background.py &
+
+# 檢查進程
+ps aux | grep claude
+```
+
+---
+
+## 🌙 自動化工作模式
+
+### 🌓 **夜間模式** (22:00 - 06:00)
+- **資源使用**: 最大化 (CPU 80%, 記憶體 70%)
+- **並行任務**: 最多 2 個同時執行
+- **執行策略**: 處理所有優先級任務
+- **自動提交**: Git commit 和推送到 GitHub
+
+### ☀️ **白天模式** (06:00 - 22:00)
+- **用戶活躍時**: 隱藏模式 (CPU < 30%)
+- **用戶空閒時**: 積極模式 (CPU < 80%)  
+- **智能檢測**: 避免干擾正常工作
+- **動態調整**: 根據系統負載自動調整
+
+### 🔄 **自動同步機制**
+- **GitHub 檢查**: 每 5 分鐘檢查遠端變化
+- **本地監控**: 即時監控文件變化
+- **差異分析**: 自動識別新增、修改的任務
+- **狀態更新**: 完成後自動同步回 GitHub
+
+---
+
+## 🎯 適合自動化的任務類型
+
+### ✅ **強烈推薦**
+- **Web 應用開發**: React, Vue, Angular 前端專案
+- **API 後端服務**: FastAPI, Express, Django REST API
+- **數據處理工具**: Python Pandas, 數據分析腳本
+- **自動化腳本**: 檔案處理, 系統管理, 爬蟲程式
+- **小型工具**: CLI 工具, GUI 應用, 實用程式
+
+### ⚠️ **需要詳細描述**
+- **複雜業務邏輯**: 需要明確的需求和流程描述
+- **第三方整合**: 提供 API 文檔和認證資訊
+- **資料庫設計**: 明確的資料結構和關聯需求
+
+### ❌ **不適合自動化**
+- **需要人工決策**: 設計評審, 需求確認
+- **需要測試驗證**: 生產環境部署, 用戶驗收測試
+- **需要外部協調**: 與他人協作或需要確認的任務
+
+---
 
 ## 🏗️ 系統架構
 
 ### 核心模組
 ```
 claude-auto-developer/
-├── src/
-│   ├── task_manager/           # 任務管理核心
-│   │   ├── task_analyzer.py   # 需求分析器
-│   │   ├── task_planner.py    # 任務規劃器
-│   │   ├── priority_manager.py # 優先級管理
-│   │   └── deadline_tracker.py # 時間追蹤
-│   ├── execution_engine/       # 執行引擎
-│   │   ├── thread_manager.py   # 執行緒管理
-│   │   ├── resource_allocator.py # 資源分配
-│   │   ├── dependency_resolver.py # 依賴解析
-│   │   └── parallel_executor.py # 並行執行器
-│   ├── ai_integration/         # AI 整合
-│   │   ├── code_generator.py   # 代碼生成
-│   │   ├── requirement_parser.py # 需求解析
-│   │   ├── tech_selector.py    # 技術選擇
-│   │   └── quality_checker.py  # 品質檢查
-│   └── monitoring/            # 監控系統
-│       ├── progress_tracker.py # 進度追蹤
-│       ├── performance_monitor.py # 效能監控
-│       └── notification_system.py # 通知系統
-├── config/                    # 配置目錄
-├── logs/                      # 日誌目錄
-├── output/                    # 生成的專案
-└── tools/                     # 輔助工具
+├── src/claude_auto_developer/
+│   ├── ai_integration/           # AI 模型整合
+│   │   ├── model_manager.py      # 多模型管理
+│   │   ├── code_generator_v2.py  # 智能程式碼生成
+│   │   ├── quality_assessor.py   # 品質評估
+│   │   └── architecture_designer.py # 架構設計
+│   ├── autonomous_engine/        # 自主引擎
+│   │   ├── night_developer.py    # 夜間開發引擎
+│   │   ├── schedule_manager.py   # 智能排程管理
+│   │   └── resource_optimizer.py # 資源優化器
+│   ├── file_interface/           # 檔案介面
+│   │   ├── task_file_parser.py   # 任務解析器
+│   │   ├── github_sync.py        # GitHub 同步
+│   │   ├── file_monitor.py       # 檔案監控
+│   │   └── progress_updater.py   # 進度更新
+│   └── task_manager/             # 任務管理
+├── claude_service.py             # 🎯 統一服務控制器
+├── run_background.py             # 背景服務啟動器
+├── stop_background.py            # 服務停止器
+├── start_claude_dev.py           # 前台啟動器
+├── logs/                         # 日誌目錄
+└── output/                       # 生成專案目錄
 ```
 
-## 🎯 使用情境
-
-### 情境 1：日常功能開發
-```bash
-# 早上上班前設定
-claude-auto add "網站新增用戶評論功能" --deadline "今天下班前"
-claude-auto add "修復登入頁面的響應式問題" --deadline "2小時"
-claude-auto start
-```
-
-### 情境 2：大型專案開發
-```bash
-# 設定一週的開發計畫
-claude-auto add "電商平台：商品管理系統" --deadline "3天"
-claude-auto add "電商平台：購物車功能" --deadline "2天" 
-claude-auto add "電商平台：支付整合" --deadline "2天"
-claude-auto start --mode "project"
-```
-
-### 情境 3：緊急需求
-```bash
-# 緊急修復
-claude-auto add "修復生產環境數據庫連線問題" --priority "urgent" --deadline "30分鐘"
-# 系統會自動暫停其他任務，全力處理緊急需求
-```
-
-## 🔧 主要指令
-
-### 基本操作
-```bash
-# 新增開發任務
-claude-auto add "功能描述" --deadline "時間" --priority "優先級"
-
-# 查看任務清單
-claude-auto list
-
-# 查看詳細進度
-claude-auto status --detailed
-
-# 啟動自動開發
-claude-auto start
-
-# 暫停/恢復
-claude-auto pause
-claude-auto resume
-```
-
-### 進階功能
-```bash
-# 調整任務優先級
-claude-auto priority "任務ID" --level "high"
-
-# 修改 deadline
-claude-auto deadline "任務ID" --extend "2天"
-
-# 檢查執行緒狀態
-claude-auto threads
-
-# 查看資源使用情況
-claude-auto resources
-```
-
-## 🧠 智能特性
-
-### 1. 需求智能分析
-- 自動識別技術需求（前端/後端/資料庫等）
-- 評估開發複雜度和時間
-- 選擇最適合的技術棧
-- 生成詳細的開發計畫
-
-### 2. 多執行緒策略
-- **並行開發**：同時進行前端和後端開發
-- **流水線作業**：一個功能完成後自動開始下一個
-- **資源優化**：根據系統負載動態調整執行緒數量
-- **衝突避免**：檢測檔案和資源衝突，自動協調
-
-### 3. 時間管理
-- **智能排程**：根據 deadline 和依賴關係最佳化執行順序
-- **進度預測**：基於當前進度預測完成時間
-- **自動調整**：時間緊迫時簡化非核心功能
-- **緊急模式**：高優先級任務可搶占所有資源
-
-## 📊 監控與回報
-
-### 實時監控
-- 每個執行緒的開發進度
-- 資源使用情況（CPU、記憶體、磁碟）
-- 預估完成時間
-- 品質檢查結果
-
-### 自動通知
-- 任務完成通知
-- Deadline 預警
-- 錯誤和異常報告
-- 每日進度報告
-
-## 🔒 安全與品質保證
-
-- **代碼審查**：自動進行代碼品質檢查
-- **測試自動化**：自動生成和執行測試
-- **版本控制**：所有變更自動提交到 Git
-- **備份機制**：開發過程中自動備份
-- **回滾功能**：出現問題時可快速回滾
-
-## 🔄 與 Austin Dev Config 整合
-
-本專案已完全整合到 Austin Dev Config 生態系統：
-
-- **sync-all 同步**：與其他專案一起自動同步
-- **VS Code 工作區**：包含在統一的開發環境中
-- **全局指令**：可在任何目錄使用
-- **跨電腦同步**：在家裡和辦公室都能使用
-
-## 🛠️ 技術棧
-
-- **Python 3.8+** - 主要開發語言
-- **APScheduler** - 高級排程系統
-- **SQLite** - 任務狀態管理
-- **Jinja2** - 模板引擎
-- **Click** - CLI 介面
-- **Systemd** - 系統服務整合
-
-## 📈 版本資訊
-
-**當前版本**: 1.0.0-alpha  
-**最後更新**: 2025-07-19  
-**開發者**: Claude Code Plan Mode  
-**License**: MIT
+### 🔧 服務控制腳本
+- **`claude_service.py`**: 統一服務控制 (推薦使用)
+- **`run_background.py`**: 真正的背景服務
+- **`start_claude_dev.py`**: 前台顯示模式
+- **快捷命令**: `claude-*` 全局可用
 
 ---
 
-> 💡 **革命性突破**: 現在您真的可以「睡覺時也在開發」！設定好任務，早上醒來就有新功能等著您。
+## 🌐 GitHub 整合
 
-## 🚀 立即開始使用
+### 📊 任務管理儲存庫
+- **GitHub URL**: https://github.com/austinchang/claude-auto-developer-tasks
+- **主要文件**: [TASKS.md](https://github.com/austinchang/claude-auto-developer-tasks/blob/main/TASKS.md)
+- **編輯連結**: [直接編輯](https://github.com/austinchang/claude-auto-developer-tasks/edit/main/TASKS.md)
 
-### 方法一：基本本地開發
-
+### 🔄 同步配置
 ```bash
-# 1. 進入專案目錄
-cd /home/tengjung_chang/austin-dev-config/claude-auto-dev
-
-# 2. 啟動虛擬環境
-source venv/bin/activate
-
-# 3. 快速測試
-python main.py quick "創建一個計算機程式" --priority high
-
-# 4. 查看本地任務文件
-cat /home/tengjung_chang/TASKS.md
+# 環境變數 (已配置在 .env 文件中)
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
+GITHUB_REPO_OWNER=austinchang
+GITHUB_REPO_NAME=claude-auto-developer-tasks
+GITHUB_TASKS_FILE=TASKS.md
 ```
 
-### 方法二：完整 GitHub 同步設定
+### 📝 工作流程
+1. **編輯任務**: 在 GitHub 或本地編輯 TASKS.md
+2. **自動檢測**: 5分鐘內檢測到變化
+3. **解析任務**: 自動分析新增或修改的任務
+4. **排程執行**: 根據優先級和截止時間排程
+5. **生成程式碼**: AI 自動開發並測試
+6. **狀態更新**: 完成狀態同步回 GitHub
+7. **自動提交**: 專案推送到對應儲存庫
 
+---
+
+## 📊 監控與日誌
+
+### 📄 日誌系統
 ```bash
-# 1. 設定 GitHub 環境變數（替換為你的資訊）
-export GITHUB_TOKEN="ghp_xxxxxxxxxxxxxxxxxxxx"
-export GITHUB_REPO_OWNER="austinchang"  
-export GITHUB_REPO_NAME="claude-auto-developer-tasks"
-export GITHUB_TASKS_FILE="TASKS.md"
+# 查看即時日誌
+claude-logs
 
-# 2. 測試 GitHub 同步
-python -c "
-from claude_auto_developer.file_interface.github_sync import GitHubTaskSync
-import asyncio
+# 日誌文件位置
+ls logs/claude_auto_dev_*.log
 
-async def test():
-    sync = GitHubTaskSync.from_env()
-    result = await sync.sync_once()
-    print(f'同步結果: {result.action} - {result.message}')
-
-asyncio.run(test())
-"
-
-# 3. 啟動夜間開發引擎
-python -c "
-from claude_auto_developer.autonomous_engine.night_developer import NightDeveloper
-import asyncio
-
-async def start_night_dev():
-    night_dev = NightDeveloper()
-    await night_dev.start()
-    print('夜間開發引擎已啟動！')
-    # 運行 5 分鐘測試
-    await asyncio.sleep(300)
-    night_dev.stop()
-
-asyncio.run(start_night_dev())
-"
+# 監控特定日誌
+tail -f logs/claude_auto_dev_$(date +%Y%m%d).log
 ```
 
-### 方法三：一鍵完整啟動
-
+### 🔍 狀態檢查
 ```bash
-# 創建啟動腳本
-cat > start_claude_dev.py << 'EOF'
-#!/usr/bin/env python3
-import asyncio
-import sys
-import os
-sys.path.insert(0, 'src')
+# 完整狀態檢查
+claude-status
 
-from claude_auto_developer.autonomous_engine.night_developer import NightDeveloper, NightConfig
-from claude_auto_developer.file_interface.github_sync import GitHubTaskSync
-from datetime import time
+# 檢查進程
+ps aux | grep claude
 
-async def main():
-    print("🤖 啟動 Claude Auto Developer...")
-    
-    # 設定夜間開發配置
-    config = NightConfig(
-        night_start_time=time(22, 0),
-        night_end_time=time(6, 0),
-        max_cpu_usage=0.8,
-        github_sync_enabled=True,
-        sync_interval=300  # 5分鐘同步一次
-    )
-    
-    # 創建並啟動夜間開發引擎
-    night_dev = NightDeveloper(config)
-    
-    print("✅ 啟動中...")
-    await night_dev.start()
-    
-    print("🌟 Claude Auto Developer 已啟動！")
-    print("📝 編輯 /home/tengjung_chang/TASKS.md 或 GitHub 上的 TASKS.md 來添加任務")
-    print("🌙 系統將在夜間自動執行開發任務")
-    print("⚡ 按 Ctrl+C 停止")
-    
-    try:
-        # 保持運行
-        while True:
-            await asyncio.sleep(60)
-            status = night_dev.get_status()
-            print(f"📊 狀態: {status['working_mode']} | 任務: {status['schedule_status']['task_counts']['running']} 個執行中")
-    except KeyboardInterrupt:
-        print("\n🛑 停止中...")
-        night_dev.stop()
-        print("✅ 已停止")
-
-if __name__ == "__main__":
-    asyncio.run(main())
-EOF
-
-# 執行
-python start_claude_dev.py
+# 檢查 PID 文件
+cat claude_auto_dev.pid
 ```
 
-### 📋 TASKS.md 文件示例
+### 📈 效能監控
+- **CPU 使用率**: 自動監控和調整
+- **記憶體使用**: 動態資源分配
+- **任務完成率**: 統計成功/失敗比例
+- **夜間工作時間**: 記錄自動開發時數
 
-你的任務文件（`/home/tengjung_chang/TASKS.md` 或 GitHub 上）應該看起來像這樣：
+---
 
+## 🚨 故障排除
+
+### 常見問題
+
+**1. 服務無法啟動**
+```bash
+# 檢查 Python 環境
+claude-dir && source venv/bin/activate
+python --version
+
+# 重新安裝依賴
+pip install -r requirements.txt
+
+# 清理 PID 文件
+rm -f claude_auto_dev.pid
+```
+
+**2. GitHub 同步失敗**
+```bash
+# 檢查網路連接
+curl -I https://api.github.com
+
+# 檢查環境變數
+cat .env | grep GITHUB
+
+# 測試 GitHub API
+curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
+```
+
+**3. 任務無法執行**
+```bash
+# 檢查任務格式
+claude-edit
+
+# 查看詳細錯誤
+claude-logs
+
+# 重新啟動服務
+python claude_service.py restart
+```
+
+**4. 權限問題**
+```bash
+# 設置腳本權限
+chmod +x *.py
+
+# 檢查文件權限
+ls -la /home/tengjung_chang/TASKS.md
+```
+
+---
+
+## 💡 最佳實踐
+
+### 撰寫高質量任務
+1. **明確的功能描述**: 具體說明要實現什麼
+2. **技術棧選擇**: 指定使用的程式語言和框架
+3. **詳細需求**: 包含功能細節和預期行為
+4. **合理時間估計**: 提供現實的開發時間
+
+### 系統使用技巧
+1. **優先級管理**: 合理分配任務優先級
+2. **定期檢查**: 監控系統運行狀況
+3. **任務分解**: 將複雜任務拆分成小任務
+4. **日誌監控**: 定期查看執行日誌
+
+### 效能優化
+1. **夜間模式**: 充分利用夜間時間開發
+2. **資源管理**: 避免在工作時間干擾
+3. **任務排程**: 合理安排任務執行順序
+4. **自動化**: 盡量使用自動化功能
+
+---
+
+## 🔗 相關連結
+
+### 📁 **本地路徑**
+- **專案目錄**: `/home/tengjung_chang/austin-dev-config/claude-auto-dev`
+- **任務文件**: `/home/tengjung_chang/TASKS.md`
+- **日誌目錄**: `logs/claude_auto_dev_*.log`
+- **配置文件**: `.env`
+
+### 🌐 **GitHub 連結**
+- **任務管理**: https://github.com/austinchang/claude-auto-developer-tasks
+- **主專案**: https://github.com/austinchang/claude-auto-developer
+- **編輯任務**: https://github.com/austinchang/claude-auto-developer-tasks/edit/main/TASKS.md
+- **問題回報**: https://github.com/austinchang/claude-auto-developer/issues
+
+### 📚 **文檔**
+- **使用指南**: [USAGE_GUIDE.md](./USAGE_GUIDE.md)
+- **快速參考**: 本 README
+- **API 文檔**: 程式碼註釋中
+
+---
+
+## 🎉 立即開始
+
+### 🚀 **3 步驟開始使用**
+
+**步驟 1: 檢查服務狀態**
+```bash
+claude-status
+```
+
+**步驟 2: 添加你的第一個任務**
+- 訪問: https://github.com/austinchang/claude-auto-developer-tasks/edit/main/TASKS.md
+- 或執行: `claude-edit`
+
+**步驟 3: 等待自動執行**
+- 監控日誌: `claude-logs`
+- 查看進度: 任務狀態會自動更新
+
+### 📋 **任務範例**
 ```markdown
-# 🤖 Claude Auto Developer - 開發任務清單
-
-## 🔥 緊急項目 (24小時內)
-- [ ] **修復網站登入問題** | 截止日期: 今天下午 | 技術: Python + FastAPI | 描述: 修復用戶登入介面的 session 超時問題 | 時間: 2小時
-
 ## ⭐ 高優先級 (本週內)
-- [ ] **個人作品展示網站** | 截止日期: 週五 | 技術: React + TypeScript | 描述: 創建響應式個人網站，包含作品集和聯絡表單 | 時間: 2天
-- [ ] **股票價格監控工具** | 截止日期: 週四 | 技術: Python + yfinance + tkinter | 描述: 開發 GUI 應用程式監控指定股票價格變化並發送通知 | 時間: 1天
-- [ ] **AI 聊天機器人** | 截止日期: 週日 | 技術: OpenAI + Streamlit | 描述: 整合 GPT API 創建智能客服聊天介面 | 時間: 1.5天
 
-## 📅 一般項目 (兩週內)
-- [ ] **數據分析儀表板** | 截止日期: 下週三 | 技術: Python + Pandas + Plotly | 描述: 創建互動式數據可視化儀表板 | 時間: 3天
-- [ ] **REST API 後端服務** | 截止日期: 2週後 | 技術: FastAPI + PostgreSQL + Docker | 描述: 建立完整的用戶管理 API | 時間: 1週
+- [ ] **我的第一個自動化專案** | 截止日期: 明天 | 技術: Python + FastAPI | 描述: 創建一個簡單的 TODO API，支援增刪改查功能，包含 SQLite 資料庫和 RESTful 介面 | 時間: 4小時
+```
+
+### 🎯 **期待結果**
+- ✅ 自動分析需求
+- ✅ 選擇合適技術棧
+- ✅ 生成完整專案結構
+- ✅ 實作所有功能
+- ✅ 自動測試和除錯
+- ✅ Git 提交和推送
+
+**🌟 享受真正的 24/7 自動化開發體驗！**
 
 ---
-*系統會自動監控此文件並執行新增的任務*
-```
-
-### 🎯 任務格式詳細說明
-
-**標準格式:**
-```markdown
-- [ ] **任務標題** | 截止日期: XXX | 技術: XXX | 描述: XXX | 時間: XXX
-```
-
-**各欄位說明:**
-- `**任務標題**`: 簡潔明確的任務名稱
-- `截止日期`: 支援多種格式 (明天、週五、2024-12-25 等)
-- `技術`: 使用的技術棧 (Python、React、Docker 等)
-- `描述`: 詳細的需求說明
-- `時間`: 預估開發時間 (2小時、1天、1週 等)
-
-**適合自動化的任務類型:**
-✅ **推薦**: Web 應用、API 開發、數據處理、GUI 工具  
-✅ **推薦**: 自動化腳本、爬蟲程式、簡單遊戲  
-⚠️ **謹慎**: 需要設計決策、複雜業務邏輯的項目  
-❌ **避免**: 需要人工確認、測試、部署的任務
-
-**範例任務模板:**
-
-```markdown
-## ⭐ 高優先級範例
-
-# 簡單工具開發
-- [ ] **密碼生成器** | 截止日期: 明天 | 技術: Python + tkinter | 描述: 創建 GUI 密碼生成工具，支援自定義長度和字符集 | 時間: 2小時
-
-# Web 應用開發  
-- [ ] **待辦事項應用** | 截止日期: 週末 | 技術: React + Node.js + MongoDB | 描述: 完整的 CRUD 待辦事項管理系統 | 時間: 1天
-
-# 數據處理
-- [ ] **CSV 數據分析器** | 截止日期: 週三 | 技術: Python + Pandas + Matplotlib | 描述: 自動分析 CSV 檔案並生成統計圖表 | 時間: 4小時
-
-# API 開發
-- [ ] **天氣 API 服務** | 截止日期: 週五 | 技術: FastAPI + requests | 描述: 整合第三方天氣 API 並提供統一介面 | 時間: 3小時
-```
-
-**🎉 現在你可以開始使用了！編輯任務文件，然後看著 Claude 自動為你開發程式！**
 
 ## 🤝 參與貢獻
 
-歡迎提交 Issue 和 Pull Request！
-
-- **GitHub Issues**: [問題回報](https://github.com/austinchang/claude-auto-developer/issues)
+### 問題回報
+- **GitHub Issues**: [回報問題](https://github.com/austinchang/claude-auto-developer/issues)
 - **Email**: austin680909@gmail.com
-- **專案主頁**: https://github.com/austinchang/claude-auto-developer
+
+### 功能請求
+歡迎提交新功能建議和改進意見！
+
+---
+
+## 📈 版本資訊
+
+**當前版本**: 2.0.0 - 完整背景服務版  
+**最後更新**: 2025-07-21  
+**開發者**: Claude Code Plan Mode  
+**License**: MIT
+
+### 🆕 **v2.0.0 新功能**
+- ✅ 真正的背景服務運行
+- ✅ 統一的服務控制介面
+- ✅ 全局快捷命令支援
+- ✅ 完整的日誌系統
+- ✅ GitHub 雙向同步
+- ✅ 智能工作模式切換
+
+---
+
+**💫 現在，AI 真的可以在你睡覺時幫你開發程式了！**
+
+🚀 **立即開始**: `claude-start`  
+📊 **查看狀態**: `claude-status`  
+📝 **編輯任務**: https://github.com/austinchang/claude-auto-developer-tasks
