@@ -22,6 +22,11 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from task_manager.task_analyzer import TaskAnalyzer
 from task_manager.task_planner import TaskPlanner
+from deployment.github_project_uploader import create_uploader_from_env
+from code_generation.intelligent_code_generator import IntelligentCodeGenerator
+from .auto_executor import AutoExecutor
+from .test_runner import TestRunner
+from .deployment_manager import DeploymentManager, DeploymentConfig
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +95,12 @@ class ParallelExecutor:
         # 初始化組件
         self.task_analyzer = TaskAnalyzer()
         self.task_planner = TaskPlanner()
+        self.code_generator = IntelligentCodeGenerator()
+        
+        # 新增：自動執行組件
+        self.auto_executor = None  # 延遲初始化
+        self.test_runner = None    # 延遲初始化
+        self.deployment_manager = None  # 延遲初始化
         
         # 創建工作區
         os.makedirs(workspace_base, exist_ok=True)
@@ -332,11 +343,23 @@ class ParallelExecutor:
             self._update_task_progress(context, 70, "執行測試")
             test_result = self._run_tests(task, context)
             
-            # 5. 部署階段 (90%)
-            self._update_task_progress(context, 90, "部署和整合")
+            # 5. 部署階段 (80%)
+            self._update_task_progress(context, 80, "部署和整合")
             deploy_result = self._deploy_code(task, context)
             
-            # 6. 完成 (100%)
+            # 6. 自動執行階段 (85%)
+            self._update_task_progress(context, 85, "環境建置")
+            execution_result = self._auto_execute(task, context)
+            
+            # 7. 自動測試階段 (90%)
+            self._update_task_progress(context, 90, "自動測試")
+            auto_test_result = self._auto_test(task, context)
+            
+            # 8. 自動部署階段 (95%)
+            self._update_task_progress(context, 95, "自動部署")
+            auto_deploy_result = self._auto_deploy(task, context)
+            
+            # 9. 完成 (100%)
             self._update_task_progress(context, 100, "任務完成")
             context.status = TaskStatus.COMPLETED
             
@@ -348,6 +371,9 @@ class ParallelExecutor:
                 "code_result": code_result,
                 "test_result": test_result,
                 "deploy_result": deploy_result,
+                "execution_result": execution_result,
+                "auto_test_result": auto_test_result,
+                "auto_deploy_result": auto_deploy_result,
                 "execution_time": (datetime.now() - context.start_time).total_seconds(),
                 "logs": context.logs
             }
@@ -754,10 +780,56 @@ htmlcov/
             f.write(gitignore_content)
     
     def _generate_code(self, task: Dict[str, Any], context: ExecutionContext, analysis: Dict[str, Any]) -> Dict[str, Any]:
-        """生成程式碼"""
-        # 這裡會整合 AI 代碼生成
-        # 目前先創建基礎檔案結構
+        """生成程式碼 - 使用智能代碼生成器"""
+        workspace = context.workspace_path
         
+        try:
+            # 🔄 使用智能代碼生成器生成具體功能代碼
+            context.logs.append("🧠 使用智能代碼生成器分析任務...")
+            generated_code = self.code_generator.generate_code_for_task(task, workspace)
+            
+            generated_files = []
+            
+            # 寫入生成的代碼檔案
+            for file_path, code_content in generated_code.items():
+                full_path = os.path.join(workspace, file_path)
+                
+                # 確保目錄存在
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                
+                # 寫入檔案
+                with open(full_path, 'w', encoding='utf-8') as f:
+                    f.write(code_content)
+                
+                generated_files.append(full_path)
+                context.logs.append(f"✅ 生成檔案: {file_path}")
+            
+            # 生成額外的輔助檔案
+            tech_stack = analysis.get('tech_stack', ['backend'])
+            
+            if 'frontend' in tech_stack and 'main.py' in str(generated_code.keys()):
+                # 如果是後端任務但需要前端，生成簡單的前端檔案
+                frontend_files = self._generate_frontend_code(task, workspace)
+                generated_files.extend(frontend_files)
+            
+            context.logs.append(f"🎉 智能代碼生成完成，生成 {len(generated_files)} 個檔案")
+            
+            return {
+                "generated_files": generated_files,
+                "tech_stack": tech_stack,
+                "file_count": len(generated_files),
+                "intelligent_generation": True
+            }
+            
+        except Exception as e:
+            context.logs.append(f"⚠️ 智能生成失敗，回退到基礎生成: {str(e)}")
+            logger.warning(f"智能代碼生成失敗: {str(e)}")
+            
+            # 回退到原來的方法
+            return self._generate_code_fallback(task, context, analysis)
+    
+    def _generate_code_fallback(self, task: Dict[str, Any], context: ExecutionContext, analysis: Dict[str, Any]) -> Dict[str, Any]:
+        """代碼生成回退方法"""
         workspace = context.workspace_path
         tech_stack = analysis.get('tech_stack', ['backend'])
         
@@ -765,26 +837,24 @@ htmlcov/
         
         # 根據技術棧生成對應檔案
         if 'frontend' in tech_stack:
-            # 生成前端檔案
             frontend_files = self._generate_frontend_code(task, workspace)
             generated_files.extend(frontend_files)
         
         if 'backend' in tech_stack:
-            # 生成後端檔案
             backend_files = self._generate_backend_code(task, workspace)
             generated_files.extend(backend_files)
         
         if 'database' in tech_stack:
-            # 生成資料庫檔案
             db_files = self._generate_database_code(task, workspace)
             generated_files.extend(db_files)
         
-        context.logs.append(f"代碼生成完成，生成 {len(generated_files)} 個檔案")
+        context.logs.append(f"基礎代碼生成完成，生成 {len(generated_files)} 個檔案")
         
         return {
             "generated_files": generated_files,
             "tech_stack": tech_stack,
-            "file_count": len(generated_files)
+            "file_count": len(generated_files),
+            "intelligent_generation": False
         }
     
     def _generate_frontend_code(self, task: Dict[str, Any], workspace: str) -> List[str]:
@@ -1095,11 +1165,80 @@ Claude Auto Developer (自動化開發系統)
         
         context.logs.append("部署完成，README 檔案已生成")
         
+        # 🔄 新增：自動上傳到 GitHub
+        github_result = self._upload_to_github(task, workspace, context)
+        
         return {
             "deploy_path": workspace,
             "readme_generated": True,
-            "status": "deployed"
+            "status": "deployed",
+            "github_upload": github_result
         }
+    
+    def _upload_to_github(self, task: Dict[str, Any], workspace: str, context: ExecutionContext) -> Dict[str, Any]:
+        """上傳專案到 GitHub"""
+        try:
+            context.logs.append("🚀 開始上傳專案到 GitHub...")
+            
+            # 創建 GitHub 上傳器
+            uploader = create_uploader_from_env()
+            
+            # 生成倉庫名稱（移除 task_ 前綴並清理名稱）
+            task_id = task['id']
+            repo_name = task_id.replace('task_', '').replace('_', '-').lower()
+            
+            # 從任務描述生成更好的倉庫名稱
+            description = task.get('description', '')
+            if description:
+                # 提取關鍵字作為倉庫名稱
+                import re
+                clean_desc = re.sub(r'[^a-zA-Z0-9\s]', '', description).lower()
+                words = clean_desc.split()[:3]  # 取前3個關鍵字
+                if words:
+                    repo_name = '-'.join(words)
+            
+            # 上傳到 GitHub
+            result = uploader.upload_project(
+                project_path=workspace,
+                repo_name=repo_name,
+                description=f"🤖 {task['description']} - 由 Claude Auto Developer 自動生成",
+                private=False  # 設為公開倉庫
+            )
+            
+            if result["success"]:
+                context.logs.append(f"✅ GitHub 上傳成功: {result.get('repo_url')}")
+                context.logs.append(f"📊 上傳檔案數量: {result.get('files_uploaded', 0)}")
+                
+                logger.info(f"專案 {task_id} 成功上傳到 GitHub: {result.get('repo_url')}")
+                
+                return {
+                    "success": True,
+                    "repo_url": result.get("repo_url"),
+                    "repo_name": result.get("repo_name"),
+                    "files_uploaded": result.get("files_uploaded", 0),
+                    "message": "專案成功上傳到 GitHub"
+                }
+            else:
+                error_msg = f"GitHub 上傳失敗: {result.get('error')}"
+                context.logs.append(f"❌ {error_msg}")
+                logger.error(f"專案 {task_id} GitHub 上傳失敗: {result.get('error')}")
+                
+                return {
+                    "success": False,
+                    "error": result.get("error"),
+                    "message": "GitHub 上傳失敗"
+                }
+                
+        except Exception as e:
+            error_msg = f"GitHub 上傳異常: {str(e)}"
+            context.logs.append(f"❌ {error_msg}")
+            logger.error(f"專案 {task['id']} GitHub 上傳異常: {str(e)}")
+            
+            return {
+                "success": False,
+                "error": str(e),
+                "message": "GitHub 上傳異常"
+            }
     
     def _update_task_progress(self, context: ExecutionContext, progress: float, message: str):
         """更新任務進度"""
@@ -1176,6 +1315,322 @@ Claude Auto Developer (自動化開發系統)
             groups[project_name].append(task)
         
         return groups
+    
+    def _auto_execute(self, task: Dict[str, Any], context: ExecutionContext) -> Dict[str, Any]:
+        """
+        自動執行階段 - 建置執行環境並啟動專案
+        
+        Args:
+            task: 任務資訊
+            context: 執行上下文
+            
+        Returns:
+            執行結果
+        """
+        logger.info("開始自動執行階段")
+        
+        result = {
+            "success": False,
+            "environment_created": False,
+            "dependencies_installed": False,
+            "service_started": False,
+            "logs": []
+        }
+        
+        try:
+            # 檢查是否啟用自動執行
+            auto_execute_config = self._get_auto_execute_config(task)
+            
+            if not auto_execute_config.get("enabled", True):
+                result["success"] = True
+                result["logs"].append("⏭️ 自動執行已停用，跳過此階段")
+                return result
+            
+            # 初始化自動執行器
+            if self.auto_executor is None:
+                self.auto_executor = AutoExecutor(
+                    project_path=context.workspace_path,
+                    config=auto_execute_config
+                )
+            
+            # 執行完整自動化流程
+            execution_result = self.auto_executor.full_auto_run()
+            
+            # 整合結果
+            result["success"] = execution_result["success"]
+            result["environment_created"] = execution_result.get("steps", {}).get("venv_creation", {}).get("success", False)
+            result["dependencies_installed"] = execution_result.get("steps", {}).get("dependency_install", {}).get("success", False)
+            result["service_started"] = execution_result.get("steps", {}).get("service_start", {}).get("success", False)
+            result["execution_report"] = execution_result.get("report_path")
+            result["logs"] = execution_result.get("logs", [])
+            
+            # 記錄到執行上下文
+            context.logs.extend([
+                "🔧 自動執行階段完成",
+                f"環境建置: {'✅' if result['environment_created'] else '❌'}",
+                f"依賴安裝: {'✅' if result['dependencies_installed'] else '❌'}",
+                f"服務啟動: {'✅' if result['service_started'] else '❌'}"
+            ])
+            
+            if result["success"]:
+                logger.info("✅ 自動執行階段成功")
+            else:
+                logger.warning("⚠️ 自動執行階段部分失敗")
+                
+        except Exception as e:
+            error_msg = f"自動執行階段失敗: {str(e)}"
+            logger.error(error_msg)
+            result["error"] = error_msg
+            result["logs"].append(f"❌ {error_msg}")
+            context.logs.append(error_msg)
+        
+        return result
+    
+    def _auto_test(self, task: Dict[str, Any], context: ExecutionContext) -> Dict[str, Any]:
+        """
+        自動測試階段 - 執行自動化測試並嘗試修復
+        
+        Args:
+            task: 任務資訊
+            context: 執行上下文
+            
+        Returns:
+            測試結果
+        """
+        logger.info("開始自動測試階段")
+        
+        result = {
+            "success": False,
+            "tests_run": 0,
+            "tests_passed": 0,
+            "tests_failed": 0,
+            "auto_fixes_applied": 0,
+            "logs": []
+        }
+        
+        try:
+            # 檢查是否啟用自動測試
+            auto_test_config = self._get_auto_test_config(task)
+            
+            if not auto_test_config.get("enabled", True):
+                result["success"] = True
+                result["logs"].append("⏭️ 自動測試已停用，跳過此階段")
+                return result
+            
+            # 初始化測試執行器
+            if self.test_runner is None:
+                # 尋找虛擬環境中的 Python
+                venv_python = self._find_venv_python(context.workspace_path)
+                self.test_runner = TestRunner(
+                    project_path=context.workspace_path,
+                    python_executable=venv_python
+                )
+            
+            # 執行自動化測試
+            test_result = self.test_runner.auto_discover_and_run()
+            
+            # 整合結果
+            test_report = test_result["test_report"]
+            result["success"] = test_report["failed"] == 0 and test_report["errors"] == 0
+            result["tests_run"] = test_report["total_tests"]
+            result["tests_passed"] = test_report["passed"]
+            result["tests_failed"] = test_report["failed"] + test_report["errors"]
+            result["test_framework"] = test_result["framework"]
+            result["test_report_path"] = test_result["report_path"]
+            
+            # 記錄到執行上下文
+            context.logs.extend([
+                "🧪 自動測試階段完成",
+                f"測試框架: {result['test_framework']}",
+                f"執行測試: {result['tests_run']} 個",
+                f"通過測試: {result['tests_passed']} 個",
+                f"失敗測試: {result['tests_failed']} 個"
+            ])
+            
+            if result["success"]:
+                logger.info("✅ 自動測試階段成功")
+            else:
+                logger.warning(f"⚠️ 自動測試階段部分失敗 ({result['tests_failed']} 個測試失敗)")
+                
+        except Exception as e:
+            error_msg = f"自動測試階段失敗: {str(e)}"
+            logger.error(error_msg)
+            result["error"] = error_msg
+            result["logs"].append(f"❌ {error_msg}")
+            context.logs.append(error_msg)
+        
+        return result
+    
+    def _auto_deploy(self, task: Dict[str, Any], context: ExecutionContext) -> Dict[str, Any]:
+        """
+        自動部署階段 - 生成部署配置並執行部署
+        
+        Args:
+            task: 任務資訊
+            context: 執行上下文
+            
+        Returns:
+            部署結果
+        """
+        logger.info("開始自動部署階段")
+        
+        result = {
+            "success": False,
+            "deployment_type": "local",
+            "deployment_url": None,
+            "deployment_files_generated": False,
+            "logs": []
+        }
+        
+        try:
+            # 檢查是否啟用自動部署
+            auto_deploy_config = self._get_auto_deploy_config(task)
+            
+            if not auto_deploy_config.get("enabled", True):
+                result["success"] = True
+                result["logs"].append("⏭️ 自動部署已停用，跳過此階段")
+                return result
+            
+            # 初始化部署管理器
+            if self.deployment_manager is None:
+                venv_python = self._find_venv_python(context.workspace_path)
+                self.deployment_manager = DeploymentManager(
+                    project_path=context.workspace_path,
+                    python_executable=venv_python
+                )
+            
+            # 創建部署配置
+            deploy_config = DeploymentConfig(
+                deployment_type=auto_deploy_config.get("type", "local"),
+                environment=auto_deploy_config.get("environment", "development"),
+                auto_start=auto_deploy_config.get("auto_start", True)
+            )
+            
+            # 執行自動部署
+            deploy_result = self.deployment_manager.auto_deploy(deploy_config)
+            
+            # 整合結果
+            result["success"] = deploy_result.success
+            result["deployment_type"] = deploy_result.deployment_type
+            result["deployment_url"] = deploy_result.deployment_url
+            result["container_id"] = deploy_result.container_id
+            result["process_id"] = deploy_result.process_id
+            result["deployment_files_generated"] = True
+            result["logs"] = deploy_result.logs
+            
+            # 生成部署報告
+            report_path = self.deployment_manager.generate_deployment_report(deploy_result)
+            result["deployment_report_path"] = str(report_path)
+            
+            # 記錄到執行上下文
+            context.logs.extend([
+                "🚀 自動部署階段完成",
+                f"部署類型: {result['deployment_type']}",
+                f"部署狀態: {'✅ 成功' if result['success'] else '❌ 失敗'}"
+            ])
+            
+            if result["deployment_url"]:
+                context.logs.append(f"應用 URL: {result['deployment_url']}")
+            
+            if result["success"]:
+                logger.info("✅ 自動部署階段成功")
+            else:
+                logger.warning("⚠️ 自動部署階段失敗")
+                
+        except Exception as e:
+            error_msg = f"自動部署階段失敗: {str(e)}"
+            logger.error(error_msg)
+            result["error"] = error_msg
+            result["logs"].append(f"❌ {error_msg}")
+            context.logs.append(error_msg)
+        
+        return result
+    
+    def _get_auto_execute_config(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """獲取自動執行配置"""
+        # 可以從任務描述中解析執行參數
+        description = task.get('description', '')
+        
+        config = {
+            "enabled": True,
+            "auto_install": True,
+            "auto_test": True,
+            "auto_run": True,
+            "timeout": 300
+        }
+        
+        # 檢查是否有特殊配置
+        if "no_auto_run" in description.lower():
+            config["enabled"] = False
+        elif "quick_run" in description.lower():
+            config["timeout"] = 60
+        
+        return config
+    
+    def _get_auto_test_config(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """獲取自動測試配置"""
+        description = task.get('description', '')
+        
+        config = {
+            "enabled": True,
+            "test_framework": "pytest",
+            "auto_fix": True
+        }
+        
+        # 檢查是否有特殊配置
+        if "no_test" in description.lower():
+            config["enabled"] = False
+        elif "unittest" in description.lower():
+            config["test_framework"] = "unittest"
+        
+        return config
+    
+    def _get_auto_deploy_config(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        """獲取自動部署配置"""
+        description = task.get('description', '')
+        
+        config = {
+            "enabled": True,
+            "type": "local",
+            "environment": "development",
+            "auto_start": True
+        }
+        
+        # 檢查是否有特殊配置
+        if "no_deploy" in description.lower():
+            config["enabled"] = False
+        elif "docker" in description.lower():
+            config["type"] = "docker"
+        elif "heroku" in description.lower():
+            config["type"] = "heroku"
+        elif "vercel" in description.lower():
+            config["type"] = "vercel"
+        
+        return config
+    
+    def _find_venv_python(self, project_path: str) -> str:
+        """尋找虛擬環境中的 Python 執行檔"""
+        project_path = Path(project_path)
+        
+        # 常見的虛擬環境路徑
+        venv_paths = [
+            project_path / ".venv",
+            project_path / "venv",
+            project_path / "env"
+        ]
+        
+        for venv_path in venv_paths:
+            if venv_path.exists():
+                if platform.system() == "Windows":
+                    python_exe = venv_path / "Scripts" / "python.exe"
+                else:
+                    python_exe = venv_path / "bin" / "python"
+                
+                if python_exe.exists():
+                    return str(python_exe)
+        
+        # 如果找不到虛擬環境，返回系統 Python
+        return sys.executable
 
 # 使用範例和測試
 if __name__ == "__main__":
