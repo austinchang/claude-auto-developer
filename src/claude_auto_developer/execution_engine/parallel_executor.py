@@ -1197,12 +1197,16 @@ Claude Auto Developer (自動化開發系統)
                 if words:
                     repo_name = '-'.join(words)
             
-            # 上傳到 GitHub
+            # 上傳到 GitHub：預設建立「私人」倉庫。
+            # 自動生成的程式碼未經人工審查，可能含有路徑、帳號或測試資料，不應預設公開。
+            # 確定要公開時設定環境變數 CLAUDE_AUTO_DEV_PUBLIC_REPOS=true。
+            make_public = os.environ.get("CLAUDE_AUTO_DEV_PUBLIC_REPOS", "").strip().lower() in ("1", "true", "yes")
+            context.logs.append(f"🔒 倉庫可見度: {'公開' if make_public else '私人'}")
             result = uploader.upload_project(
                 project_path=workspace,
                 repo_name=repo_name,
                 description=f"🤖 {task['description']} - 由 Claude Auto Developer 自動生成",
-                private=False  # 設為公開倉庫
+                private=not make_public
             )
             
             if result["success"]:

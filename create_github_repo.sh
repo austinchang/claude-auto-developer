@@ -32,10 +32,18 @@ show_error() {
 PROJECT_NAME="claude-auto-developer"
 GITHUB_USER="austinchang"
 REPO_URL="https://github.com/${GITHUB_USER}/${PROJECT_NAME}.git"
+# 預設建立私人倉庫；要公開請執行：REPO_VISIBILITY=public ./create_github_repo.sh
+REPO_VISIBILITY="${REPO_VISIBILITY:-private}"
+case "$REPO_VISIBILITY" in
+    public)  REPO_PRIVATE_JSON=false ;;
+    private) REPO_PRIVATE_JSON=true ;;
+    *) echo "REPO_VISIBILITY 只能是 public 或 private（目前：$REPO_VISIBILITY）" >&2; exit 1 ;;
+esac
 
 show_info "專案名稱: $PROJECT_NAME"
 show_info "GitHub 使用者: $GITHUB_USER"
 show_info "倉庫 URL: $REPO_URL"
+show_info "倉庫可見度: $REPO_VISIBILITY"
 
 # 方法 1: 嘗試使用 GitHub CLI（忽略 SSL）
 try_gh_cli() {
@@ -45,7 +53,7 @@ try_gh_cli() {
     export GIT_SSL_NO_VERIFY=true
     export NODE_TLS_REJECT_UNAUTHORIZED=0
     
-    if gh repo create "${GITHUB_USER}/${PROJECT_NAME}" --public --source=. --remote=origin --push 2>/dev/null; then
+    if gh repo create "${GITHUB_USER}/${PROJECT_NAME}" "--${REPO_VISIBILITY}" --source=. --remote=origin --push 2>/dev/null; then
         show_success "GitHub 倉庫創建成功！"
         return 0
     else
@@ -71,7 +79,7 @@ try_api_create() {
         "name": "'"$PROJECT_NAME"'",
         "description": "智能專案開發自動化系統 - 讓 Claude Code 在晚上也能工作",
         "homepage": "",
-        "private": false,
+        "private": '"$REPO_PRIVATE_JSON"',
         "has_issues": true,
         "has_projects": true,
         "has_wiki": true
@@ -108,7 +116,7 @@ manual_guide() {
     echo "2. 📝 填寫倉庫資訊:"
     echo "   - Repository name: claude-auto-developer"
     echo "   - Description: 智能專案開發自動化系統 - 讓 Claude Code 在晚上也能工作"
-    echo "   - Public repository (勾選)"
+    echo "   - 可見度選 ${REPO_VISIBILITY}（預設 Private）"
     echo "   - 不要初始化 README, .gitignore 或 license"
     echo ""
     echo "3. 🔗 創建後，使用以下指令連接:"
